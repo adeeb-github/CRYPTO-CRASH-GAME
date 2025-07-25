@@ -15,7 +15,7 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URL).then(() => console.log("MongoDB connected"));
 
-app.use("/api/wallet", require("./routes/walletRoutes"));
+app.use("/api/wallet", require("./routes/WalletRoutes"));
 app.use("/api/game", require("./routes/gameRoutes"));
 require("./socket")(io);
 
