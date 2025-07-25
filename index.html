@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Crypto Crash Game - WebSocket Test</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: #ffffff;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 28px;
+      color: #00ffe7;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    #multiplier {
+      font-size: 32px;
+      font-weight: bold;
+      color: #00ffe7;
+    }
+
+    #status {
+      color: #ff7b7b;
+      font-weight: 600;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    button {
+      width: 45%;
+      padding: 10px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      background-color: #00ffe7;
+      color: #000;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00c4b4;
+    }
+
+    #message {
+      font-size: 15px;
+      font-weight: 500;
+      margin-top: 15px;
+      color: #e7e7e7;
+    }
+
+    hr {
+      border: 0.5px solid rgba(255, 255, 255, 0.2);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>🚀 Crypto Crash Game</h2>
+
+    <p><strong>Current Multiplier:</strong> <span id="multiplier">1.00</span>x</p>
+    <p><strong>Status:</strong> <span id="status">Running...</span></p>
+
+    <hr />
+
+    <input type="text" id="userId" placeholder="Enter User ID" />
+    <input type="number" id="betAmount" placeholder="Bet Amount" />
+
+    <div>
+      <button onclick="placeBet()">Place Bet</button>
+      <button onclick="cashOut()">Cash Out</button>
+    </div>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- Load Socket.IO -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:4000");
+
+    socket.on("connect", () => {
+      console.log("✅ Connected to server:", socket.id);
+    });
+
+    socket.on("multiplier_update", (data) => {
+      document.getElementById("multiplier").innerText = data.multiplier.toFixed(2);
+    });
+
+    socket.on("crashed", (data) => {
+      document.getElementById("status").innerText = "💥 Crashed at " + data.crashPoint.toFixed(2) + "x";
+    });
+
+    socket.on("bet_placed", (data) => {
+      const msg = data.success ? "✅ Bet placed!" : "❌ " + data.message;
+      document.getElementById("message").innerText = msg;
+    });
+
+    socket.on("cashout_success", (data) => {
+      document.getElementById("message").innerText = "💸 Cashed out: $" + data.amount.toFixed(2);
+    });
+
+    function placeBet() {
+      const userId = document.getElementById("userId").value;
+      const amount = parseFloat(document.getElementById("betAmount").value);
+      socket.emit("place_bet", { userId, amount });
+    }
+
+    function cashOut() {
+      const userId = document.getElementById("userId").value;
+      const multiplier = parseFloat(document.getElementById("multiplier").innerText);
+      socket.emit("cashout", { userId, multiplier });
+    }
+  </script>
+</body>
+</html>
