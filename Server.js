@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URL).then(() => console.log("MongoDB connecte
 
 app.use("/api/wallet", require("./routes/WalletRoutes"));
 app.use("/api/game", require("./routes/gameRoutes"));
-require("./socket")(io);
+require("./Socket")(io);
 
 const PORT = process.env.PORT || 5000;
 app.get("/", (req, res) => {
