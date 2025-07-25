@@ -21,30 +21,32 @@ Players bet in USD, which is converted to a cryptocurrency (like BTC or ETH) usi
 
 ### 1. Clone the Repository
 
-```bash
+
 git clone https://github.com/your-username/GAMECRYPTO.git
 cd GAMECRYPTO
-## 🧪 Seed the Database with Sample Data
+
 
 
 ### 2.Install Dependencies
+
+
 npm install
 
-##3. Configure .env File
+## 3. Configure .env File
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 CRYPTO_API_URL=https://api.coingecko.com/api/v3/simple/price
 CRYPTO_SYMBOL=bitcoin
 ### Run the Project
-npm start
+npm run dev
 
 ### **Populate Sample Data**
 
 node populate.js
 
-###Connect to WebSocket:
+### Connect to WebSocket:
 const socket = io("http://localhost:5000");
-###const socket = io("http://localhost:5000");
+### const socket = io("http://localhost:5000");
 socket.emit('place_bet', { userId: "USER_ID", amount: 100 });
 
 
@@ -53,7 +55,7 @@ GET https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
 
 
 
-##API Testing with Postman
+## API Testing with Postman
 
 Base URL: http://localhost:5000
 Create User (POST)
@@ -66,7 +68,7 @@ Body: { "userId": "USER_ID", "amount": 100 }
 Get Balance (GET)
 /api/users/balance/:userId
 
-##Folder Structure
+## Folder Structure
 GAMECRYPTO/
 ├── models/
 ├── routes/
