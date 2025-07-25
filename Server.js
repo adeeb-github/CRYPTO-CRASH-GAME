@@ -1,7 +1,7 @@
 const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
-const { Server } = require("socket.io");
+const { Server } = require("Socket.io");
 const dotenv = require("dotenv");
 const cors = require("cors");
 
@@ -15,7 +15,7 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URL).then(() => console.log("MongoDB connected"));
 
-app.use("/api/wallet", require("./routes/walletRoutes"));
+app.use("/api/wallet", require("./routes/WalletRoutes"));
 app.use("/api/game", require("./routes/gameRoutes"));
 require("./socket")(io);
 
