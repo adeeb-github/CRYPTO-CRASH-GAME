@@ -109,7 +109,6 @@
 
     <hr />
 
-    <input type="text" id="userId" placeholder="Enter User ID" />
     <input type="number" id="betAmount" placeholder="Bet Amount" />
 
     <div>
@@ -123,10 +122,14 @@
   <!-- Load Socket.IO -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
-    const socket = io("https://crypto-crash-game-tpv0.onrender.com");
+    const socket = io("http://localhost:4000");
+
+    // Auto-generate a unique user ID
+    const userId = "user_" + Math.floor(Math.random() * 100000);
 
     socket.on("connect", () => {
       console.log("✅ Connected to server:", socket.id);
+      console.log("🆔 User ID:", userId);
     });
 
     socket.on("multiplier_update", (data) => {
@@ -147,13 +150,15 @@
     });
 
     function placeBet() {
-      const userId = document.getElementById("userId").value;
       const amount = parseFloat(document.getElementById("betAmount").value);
+      if (isNaN(amount) || amount <= 0) {
+        document.getElementById("message").innerText = "❗ Please enter a valid bet amount.";
+        return;
+      }
       socket.emit("place_bet", { userId, amount });
     }
 
     function cashOut() {
-      const userId = document.getElementById("userId").value;
       const multiplier = parseFloat(document.getElementById("multiplier").innerText);
       socket.emit("cashout", { userId, multiplier });
     }
