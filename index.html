@@ -121,47 +121,68 @@
 
   <!-- Load Socket.IO -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script>
-    const socket = io("https://crypto-crash-game-tpv0.onrender.com/");
+<script>
+const socket = io("http://localhost:4000");
 
-    // Auto-generate a unique user ID
-    const userId = "user_" + Math.floor(Math.random() * 100000);
+// Auto-generate a unique user ID
+const userId = "user_" + Math.floor(Math.random() * 100000);
 
-    socket.on("connect", () => {
-      console.log("✅ Connected to server:", socket.id);
-      console.log("🆔 User ID:", userId);
-    });
+let isCrashed = false; // Track if round has crashed
 
-    socket.on("multiplier_update", (data) => {
-      document.getElementById("multiplier").innerText = data.multiplier.toFixed(2);
-    });
+socket.on("connect", () => {
+  console.log("✅ Connected to server:", socket.id);
+  console.log("🆔 User ID:", userId);
+});
 
-    socket.on("crashed", (data) => {
-      document.getElementById("status").innerText = "💥 Crashed at " + data.crashPoint.toFixed(2) + "x";
-    });
+// Update multiplier only if the game hasn't crashed
+socket.on("multiplier_update", (data) => {
+  if (!isCrashed) {
+    document.getElementById("multiplier").innerText = data.multiplier.toFixed(2);
+  }
+});
 
-    socket.on("bet_placed", (data) => {
-      const msg = data.success ? "✅ Bet placed!" : "❌ " + data.message;
-      document.getElementById("message").innerText = msg;
-    });
+// Handle crash
+socket.on("crashed", (data) => {
+  isCrashed = true;
+  document.getElementById("status").innerText =
+    "💥 Crashed at " + data.crashPoint.toFixed(2) + "x";
 
-    socket.on("cashout_success", (data) => {
-      document.getElementById("message").innerText = "💸 Cashed out: $" + data.amount.toFixed(2);
-    });
+  // Reset multiplier and status for next round after 2 seconds
+  setTimeout(() => {
+    isCrashed = false;
+    document.getElementById("multiplier").innerText = "1.00";
+    document.getElementById("status").innerText = "Running...";
+    document.getElementById("message").innerText = "";
+  }, 10000);
+});
 
-    function placeBet() {
-      const amount = parseFloat(document.getElementById("betAmount").value);
-      if (isNaN(amount) || amount <= 0) {
-        document.getElementById("message").innerText = "❗ Please enter a valid bet amount.";
-        return;
-      }
-      socket.emit("place_bet", { userId, amount });
-    }
+// Display bet placement result
+socket.on("bet_placed", (data) => {
+  const msg = data.success ? "✅ Bet placed!" : "❌ " + data.message;
+  document.getElementById("message").innerText = msg;
+});
 
-    function cashOut() {
-      const multiplier = parseFloat(document.getElementById("multiplier").innerText);
-      socket.emit("cashout", { userId, multiplier });
-    }
-  </script>
+// Display cashout result
+socket.on("cashout_success", (data) => {
+  document.getElementById("message").innerText =
+    "💸 Cashed out: $" + data.amount.toFixed(2) + " at " + data.multiplier.toFixed(2) + "x";
+});
+
+// Place bet
+function placeBet() {
+  const amount = parseFloat(document.getElementById("betAmount").value);
+  if (isNaN(amount) || amount <= 0) {
+    document.getElementById("message").innerText = "❗ Please enter a valid bet amount.";
+    return;
+  }
+  socket.emit("place_bet", { userId, amount });
+}
+
+// Cash out
+function cashOut() {
+  socket.emit("cashout", { userId }); // No multiplier sent, server calculates
+}
+</script>
+
 </body>
 </html>

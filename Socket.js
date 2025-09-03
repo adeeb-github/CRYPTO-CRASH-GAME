@@ -1,7 +1,7 @@
 const Bet = require("./models/Bet");
 const User = require("./models/User");
 const Round = require("./models/Round");
-const { startGameLoop } = require("./game/engine");
+const { startGameLoop, getCurrentMultiplier } = require("./game/engine"); // add getter
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
@@ -39,21 +39,23 @@ module.exports = (io) => {
     });
 
     // 💸 CASHOUT
-    socket.on("cashout", async ({ userId, multiplier }) => {
+    socket.on("cashout", async ({ userId }) => { // no multiplier from client
       try {
         const user = await User.findOne({ username: userId });
         if (!user) return;
 
         const bet = await Bet.findOne({ userId: user._id, isCashedOut: false });
         if (bet) {
-          const payout = bet.amount * multiplier;
+          const currentMultiplier = getCurrentMultiplier(); // live multiplier from server
+          const payout = bet.amount * currentMultiplier;
+
           await User.updateOne({ _id: user._id }, { $inc: { balance: payout } });
 
           bet.isCashedOut = true;
-          bet.multiplier = multiplier;
+          bet.multiplier = currentMultiplier;
           await bet.save();
 
-          socket.emit("cashout_success", { amount: payout });
+          socket.emit("cashout_success", { amount: payout, multiplier: currentMultiplier });
         }
       } catch (err) {
         console.error("❌ Error during cashout:", err);
